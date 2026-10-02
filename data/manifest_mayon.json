@@ -1,0 +1,34 @@
+{
+  "name": "mayon_1k",
+  "crs": "EPSG:32651",
+  "origin": [
+    578029.1578783715,
+    1453032.2654096424
+  ],
+  "earth_model": "flat",
+  "z_exaggeration": 1.0,
+  "tile_overlap_px": 0,
+  "texture_alpha": true,
+  "texture_flip_y": false,
+  "vertical_datum": "EGM2008 (COP30)",
+  "tiles": [
+    {
+      "row": 0,
+      "col": 0,
+      "file": "dem/mayon_1k_textured.glb",
+      "texture": "dem/mayon_1k_textured.png",
+      "bounds": [
+        578029.1578783715,
+        1453032.2654096424,
+        580036.2676841553,
+        1455008.964460793
+      ]
+    }
+  ],
+  "buildings": "osm/mayon_1k_buildings.glb",
+  "sources": {
+    "dem": "Copernicus DEM COP30 (surface model, includes canopy/buildings)",
+    "imagery": "Copernicus Sentinel-2"
+  },
+  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery"
+}

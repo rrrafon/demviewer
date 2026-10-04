@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DEM Viewer</title>
+<style>
+  :root { --panel-bg: rgba(255,255,255,0.94); --accent: #1a6fd4; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
+  #app { width: 100%; height: 100%; }
+  #app canvas { display: block; }
+  #panel {
+    position: fixed; left: 8px; top: 8px; z-index: 10;
+    background: var(--panel-bg); border-radius: 8px; width: 300px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    font-size: 13px; line-height: 1.45; overflow: hidden;
+  }
+  #panel header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 10px; font-weight: bold; cursor: pointer; user-select: none;
+  }
+  #panel header button {
+    border: 1px solid #bbb; background: #fff; border-radius: 4px;
+    min-width: 44px; min-height: 32px; font-size: 14px; cursor: pointer;
+  }
+  #panelBody { padding: 0 10px 10px; }
+  #panel.collapsed #panelBody { display: none; }
+  #panel section { margin: 8px 0; }
+  #panel section > .stitle {
+    font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px;
+  }
+  .seg { display: flex; gap: 4px; }
+  .seg button, .dsbtn {
+    flex: 1; border: 1px solid #bbb; background: #fff; border-radius: 4px;
+    min-height: 44px; font-size: 13px; cursor: pointer; padding: 6px 4px;
+  }
+  .seg button.active, .dsbtn.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .seg button:disabled { opacity: 0.45; }
+  input[type="range"] { width: 100%; min-height: 44px; }
+  .rowline { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .rowline input[type="checkbox"] { width: 22px; height: 22px; }
+  #info { font-size: 12px; color: #333; }
+  #loading {
+    position: fixed; inset: 0; z-index: 20; display: flex;
+    flex-direction: column; justify-content: center; align-items: center; gap: 10px;
+    background: rgba(10,12,16,0.72); color: #fff; font-size: 14px;
+  }
+  #loading .bar { width: min(320px, 70vw); height: 8px; background: #444; border-radius: 4px; }
+  #loading .bar > div { height: 100%; width: 0%; background: var(--accent); border-radius: 4px; }
+  #errbox {
+    position: fixed; left: 8px; right: 8px; top: 8px; z-index: 30; display: none;
+    background: #fdecea; border: 1px solid #c00; border-radius: 8px;
+    padding: 10px 12px; font-size: 13px; color: #700; max-width: 480px;
+  }
+  #errbox button {
+    margin-top: 6px; min-height: 44px; padding: 6px 14px; cursor: pointer;
+  }
+  #attr {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: rgba(255,255,255,0.85); padding: 3px 10px;
+    font-size: 11px; color: #333; text-align: center;
+  }
+  @media (max-width: 700px) {
+    #panel {
+      left: 0; right: 0; top: auto; bottom: 0; width: auto;
+      border-radius: 12px 12px 0 0; max-height: 55vh; overflow-y: auto;
+    }
+    #panelBody { padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)); }
+    #attr { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #panel { transition: none; }
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three/three.module.js",
+    "three/addons/": "./vendor/three/addons/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="app"></div>
+<div id="panel">
+  <header id="panelHead"><span id="dsTitle">DEM Viewer</span><button id="collapseBtn" aria-label="collapse panel">–</button></header>
+  <div id="panelBody">
+    <section><div class="stitle">Dataset</div><div class="seg" id="dsBtns"></div></section>
+    <section><div class="stitle">Display</div><div class="seg" id="modeSeg">
+      <button data-mode="untextured">Untextured</button><button data-mode="textured">Textured</button><button data-mode="hillshade">Hillshade</button>
+    </div></section>
+    <section><div class="stitle">Height</div>
+      <div class="rowline"><input id="exagg" type="range" min="1" max="5" value="1" step="0.1"><span id="exaggVal">1.0×</span></div>
+    </section>
+    <section id="sunSection" style="display:none"><div class="stitle">Sun</div>
+      <div class="rowline"><span>Azimuth</span><span id="sunAzVal">315°</span></div>
+      <input id="sunAz" type="range" min="0" max="360" value="315" step="1">
+      <div class="rowline"><span>Altitude</span><span id="sunAltVal">45°</span></div>
+      <input id="sunAlt" type="range" min="0" max="90" value="45" step="1">
+      <div class="rowline"><label for="chkShadow">Cast shadows</label><input type="checkbox" id="chkShadow" checked></div>
+    </section>
+    <section id="layerSection" style="display:none"><div class="stitle">Layers</div>
+      <div class="rowline"><label for="chkBld">Buildings</label><input type="checkbox" id="chkBld" checked></div>
+    </section>
+    <section><div class="stitle">Info</div><div id="info">loading…</div></section>
+  </div>
+</div>
+<div id="loading"><div id="loadLabel">loading…</div><div class="bar"><div id="loadBar"></div></div></div>
+<div id="errbox"><div id="errMsg"></div><button onclick="location.reload()">Retry</button></div>
+<div id="attr">Copernicus DEM (EGM2008, surface model) · Copernicus Sentinel-2 imagery · © OpenStreetMap contributors (ODbL)</div>
+<script type="module" src="./main.js?v=15"></script>
+</body>
+</html>

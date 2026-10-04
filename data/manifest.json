@@ -1,0 +1,70 @@
+{
+  "name": "mtisarog_20k",
+  "crs": "EPSG:32651",
+  "origin": [
+    515731.3,
+    1485874.4
+  ],
+  "earth_model": "flat",
+  "z_exaggeration": 1.0,
+  "tile_overlap_px": 1,
+  "texture_alpha": true,
+  "texture_flip_y": false,
+  "vertical_datum": "EGM2008 (COP30)",
+  "tiles": [
+    {
+      "row": 0,
+      "col": 0,
+      "file": "dem/mtIsarog_DEM_r0c0_textured.glb",
+      "texture": "dem/mtIsarog_DEM_r0c0_textured.webp",
+      "bounds": [
+        0.0,
+        24968.3,
+        25029.0,
+        49997.3
+      ]
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "file": "dem/mtIsarog_DEM_r0c1_textured.glb",
+      "texture": "dem/mtIsarog_DEM_r0c1_textured.webp",
+      "bounds": [
+        24968.3,
+        24968.3,
+        49997.3,
+        49997.3
+      ]
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "file": "dem/mtIsarog_DEM_r1c0_textured.glb",
+      "texture": "dem/mtIsarog_DEM_r1c0_textured.webp",
+      "bounds": [
+        0.0,
+        0.0,
+        25029.0,
+        25029.0
+      ]
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "file": "dem/mtIsarog_DEM_r1c1_textured.glb",
+      "texture": "dem/mtIsarog_DEM_r1c1_textured.webp",
+      "bounds": [
+        24968.3,
+        0.0,
+        49997.3,
+        25029.0
+      ]
+    }
+  ],
+  "buildings": "osm/mtIsarog_OSM_aligned.glb",
+  "sources": {
+    "dem": "Copernicus DEM COP30 (surface model)",
+    "imagery": "Copernicus Sentinel-2"
+  },
+  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery"
+}

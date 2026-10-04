@@ -66,5 +66,6 @@
     "dem": "Copernicus DEM COP30 (surface model)",
     "imagery": "Copernicus Sentinel-2"
   },
-  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery"
+  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery",
+  "elevation_grid": "dem/mtIsarog_DEM_elev.json"
 }

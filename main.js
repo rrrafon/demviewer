@@ -16,12 +16,6 @@ function showError(msg) {
   console.error(msg);
 }
 
-// Datasets known to the switcher. Add one entry per export_web run
-// (label shown on the button, file under data/).
-const DATASETS = [
-  { label: 'Mt Isarog 20k', file: 'manifest.json' },
-];
-
 const SETTINGS_KEY = 'demviewer-settings';
 const loadSettings = () => {
   try { return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; }
@@ -150,7 +144,7 @@ async function main() {
   const unionBox = new THREE.Box3();
   // Progress across every fetched file (geometry + textures + buildings).
   const expectedFiles = manifest.tiles.reduce((n, t) => n + 1 + (t.texture ? 1 : 0), 0)
-    + (manifest.buildings ? 1 : 0);
+    + (manifest.buildings ? 1 : 0) + (manifest.elevation_grid ? 1 : 0);
   let loadedFiles = 0;
   const tick = (label) => {
     loadedFiles++;
@@ -237,7 +231,7 @@ async function main() {
   infoEl.innerHTML =
     `${manifest.tiles.length} tiles · extent ${Math.round(size.x)} × ${Math.round(size.y)} m<br>` +
     `elevation ${zRange[0].toFixed(1)} … ${zRange[1].toFixed(1)} m<br>` +
-    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v15)</span><br>` +
+    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v18)</span><br>` +
     `${manifest.attribution}`;
 
   const settings = loadSettings();
@@ -247,10 +241,16 @@ async function main() {
     shadow: chkShadow.checked,
   });
 
-  // Dataset switcher (URL ?m= stays the source of truth).
+  // Dataset switcher (URL ?m= stays the source of truth). Populated from
+  // data/datasets.json, which export_web maintains on every export.
   const currentM = params.get('m') || 'manifest.json';
+  let datasetList = [{ label: manifest.name, file: currentM }];
+  try {
+    const reg = await (await fetch('./data/datasets.json')).json();
+    if (Array.isArray(reg) && reg.length) datasetList = reg;
+  } catch { /* single dataset */ }
   const dsBtns = el('dsBtns');
-  DATASETS.forEach((d) => {
+  datasetList.forEach((d) => {
     const b = document.createElement('button');
     b.textContent = d.label;
     b.className = 'dsbtn' + (d.file === currentM ? ' active' : '');
@@ -350,6 +350,102 @@ async function main() {
       persist();
     };
   }
+
+  // Click-to-read elevation (+ lat/lon). Heights come from the source-DEM
+  // grid, NOT the decimated mesh (plan §7: never measure the mesh).
+  // UTM inverse (Snyder series, mm-accurate) avoids a proj library.
+  const utmZone = (() => {
+    const m = /EPSG:32([67])(\d\d)/.exec(manifest.crs || '');
+    return m ? { south: m[1] === '7', zone: Number(m[2]) } : null;
+  })();
+  const utmToLonLat = (x, y) => {
+    if (!utmZone) return null;
+    const a = 6378137.0, f = 1 / 298.257223563;
+    const k0 = 0.9996, e2 = 2 * f - f * f, ep2 = e2 / (1 - e2);
+    const lon0 = ((utmZone.zone - 1) * 6 - 180 + 3) * Math.PI / 180;
+    const X = x - 500000.0;
+    let Y = y;
+    if (utmZone.south) Y -= 10000000.0;
+    const M = Y / k0;
+    const mu = M / (a * (1 - e2 / 4 - 3 * e2 * e2 / 64 - 5 * e2 * e2 * e2 / 256));
+    const e1 = (1 - Math.sqrt(1 - e2)) / (1 + Math.sqrt(1 - e2));
+    const J1 = 3 * e1 / 2 - 27 * e1 * e1 * e1 / 32;
+    const J2 = 21 * e1 * e1 / 16 - 55 * e1 * e1 * e1 * e1 / 16;
+    const J3 = 151 * e1 * e1 * e1 / 96;
+    const fp = mu + J1 * Math.sin(2 * mu) + J2 * Math.sin(4 * mu) + J3 * Math.sin(6 * mu);
+    const C1 = ep2 * Math.cos(fp) * Math.cos(fp);
+    const T1 = Math.tan(fp) * Math.tan(fp);
+    const N1 = a / Math.sqrt(1 - e2 * Math.sin(fp) * Math.sin(fp));
+    const R1 = a * (1 - e2) / Math.pow(1 - e2 * Math.sin(fp) * Math.sin(fp), 1.5);
+    const D = X / (N1 * k0);
+    const lat = fp - N1 * Math.tan(fp) / R1 * (D * D / 2
+      - (5 + 3 * T1 + 10 * C1 - 4 * C1 * C1) * D * D * D * D / 24
+      + (61 + 90 * T1 + 298 * C1 + 45 * T1 * T1 - 252 * ep2 - 3 * C1 * C1) * D * D * D * D * D * D / 720);
+    const lon = lon0 + (D - (1 + 2 * T1 + C1) * D * D * D / 6
+      + (5 - 2 * C1 + 28 * T1 - 3 * C1 * C1 + 8 * ep2 + 24 * T1 * T1) * D * D * D * D * D / 120) / Math.cos(fp);
+    return [lon * 180 / Math.PI, lat * 180 / Math.PI];
+  };
+  let elevGrid = null;
+  if (manifest.elevation_grid) {
+    try {
+      const eg = await (await fetch('./data/' + manifest.elevation_grid)).json();
+      const n = eg.n;
+      const raw = Uint8Array.from(atob(eg.data), (c) => c.charCodeAt(0));
+      elevGrid = { n, bounds: eg.bounds, z: new Float32Array(raw.buffer) };
+      tick('elevation grid');
+    } catch (e) { console.warn('elevation grid skipped:', e); }
+  }
+  const sampleElev = (wx, wy) => { // world coords (absolute, pre-centre)
+    if (!elevGrid) return null;
+    const [x0, y0, x1, y1] = elevGrid.bounds;
+    const n = elevGrid.n;
+    const gx = (wx - x0) / (x1 - x0) * (n - 1);
+    const gy = (wy - y0) / (y1 - y0) * (n - 1);
+    if (gx < 0 || gy < 0 || gx > n - 1 || gy > n - 1) return null;
+    const x = Math.min(Math.floor(gx), n - 2), y = Math.min(Math.floor(gy), n - 2);
+    const fx = gx - x, fy = gy - y;
+    const at = (ix, iy) => elevGrid.z[iy * n + ix];
+    return at(x, y) * (1 - fx) * (1 - fy) + at(x + 1, y) * fx * (1 - fy)
+      + at(x, y + 1) * (1 - fx) * fy + at(x + 1, y + 1) * fx * fy;
+  };
+  const marker = new THREE.Mesh(
+    new THREE.SphereGeometry(Math.max(20, extent / 500), 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xff3333, depthTest: false, transparent: true, opacity: 0.9 }));
+  marker.visible = false;
+  marker.renderOrder = 999;
+  scene.add(marker);
+  const elevLine = document.createElement('div');
+  infoEl.appendChild(elevLine);
+  const raycaster = new THREE.Raycaster();
+  let downAt = null;
+  renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
+  renderer.domElement.addEventListener('pointerup', (e) => {
+    if (!downAt) return;
+    const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
+    downAt = null;
+    if (moved > 5) return; // was a drag, not a click
+    const rect = renderer.domElement.getBoundingClientRect();
+    const ptr = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(ptr, camera);
+    const hits = raycaster.intersectObjects([terrainGroup, buildingsGroup], true);
+    if (!hits.length) return;
+    const p = hits[0].point;
+    // Back to absolute frame: undo centre offset and exaggeration, then
+    // re-apply the manifest origin (mesh coords are origin-relative).
+    const k = scaleGroup.scale.z;
+    const ox = (manifest.origin && manifest.origin[0]) || 0;
+    const oy = (manifest.origin && manifest.origin[1]) || 0;
+    const wx = p.x - scaleGroup.position.x + ox;
+    const wy = p.y - scaleGroup.position.y + oy;
+    const h = sampleElev(wx, wy);
+    const ll = utmToLonLat(wx, wy);
+    marker.position.copy(p);
+    marker.visible = true;
+    elevLine.innerHTML = (h === null || h === undefined || Number.isNaN(h) ? 'no elevation data' : `${h.toFixed(1)} m`)
+      + (ll ? ` · ${ll[1].toFixed(5)}°, ${ll[0].toFixed(5)}°` : '');
+  });
 
   // Shadows default on for desktop, off on small screens; remembered after.
   const chkShadow = el('chkShadow');

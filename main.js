@@ -225,13 +225,17 @@ async function main() {
   controls.target.set(0, 0, (zRange[0] + zRange[1]) / 2);
   controls.update();
   hillSun.target.position.set(0, 0, (zRange[0] + zRange[1]) / 2);
+  // Home snapshot for the reset button (camera only).
+  const homePos = camera.position.clone();
+  const homeTarget = controls.target.clone();
+  const homeFov = camera.fov;
 
   loadEl.style.display = 'none';
   el('dsTitle').textContent = manifest.name;
   infoEl.innerHTML =
     `${manifest.tiles.length} tiles · extent ${Math.round(size.x)} × ${Math.round(size.y)} m<br>` +
     `elevation ${zRange[0].toFixed(1)} … ${zRange[1].toFixed(1)} m<br>` +
-    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v20)</span><br>` +
+    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v26)</span><br>` +
     `${manifest.attribution}`;
 
   const settings = loadSettings();
@@ -239,6 +243,7 @@ async function main() {
     mode, exagg: exagg.value, az: sunAz.value, alt: sunAlt.value,
     bld: chkBld ? chkBld.checked : true,
     shadow: chkShadow.checked,
+    focal: focal.value,
   });
 
   // Dataset switcher (URL ?m= stays the source of truth). Populated from
@@ -342,6 +347,74 @@ async function main() {
     persist();
   };
 
+  // v2.1 camera controls: focal slider (35mm-equiv), fly-to-point,
+  // reset-camera and restore-defaults icon buttons.
+  const focal = el('focal');
+  const focalVal = el('focalVal');
+  const mmToFov = (mm) => 2 * Math.atan(12 / mm) * 180 / Math.PI;
+  const applyFocal = () => {
+    focalVal.textContent = `${focal.value} mm`;
+    camera.fov = mmToFov(Number(focal.value));
+    camera.updateProjectionMatrix();
+    persist();
+  };
+  focal.oninput = applyFocal;
+  el('resetBtn').onclick = () => {
+    camera.position.copy(homePos);
+    controls.target.copy(homeTarget);
+    controls.enablePan = true;
+    controls.enableZoom = true;
+    marker.visible = markerPlaced;
+    focusBtn.classList.remove('active');
+    focal.value = Math.round(12 / Math.tan(homeFov * Math.PI / 360));
+    applyFocal();
+    controls.update();
+  };
+  el('homeBtn').onclick = () => {
+    setMode('textured');
+    exagg.value = 1;
+    exagg.dispatchEvent(new Event('input'));
+    sunAz.value = 315;
+    sunAlt.value = 45;
+    updateHillSun();
+    if (chkShadow) {
+      chkShadow.checked = window.innerWidth > 700;
+      chkShadow.dispatchEvent(new Event('change'));
+    }
+    if (chkBld) {
+      chkBld.checked = true;
+      buildingsGroup.visible = true;
+      persist();
+    }
+    try { localStorage.removeItem(SETTINGS_KEY); } catch { /* private mode */ }
+    persist();
+  };
+  const focusBtn = el('focusBtn');
+  focusBtn.onclick = () => {
+    if (!marker.visible) return;
+    // Stand on the point: eye just above the marker, gaze carried over
+    // from the current view direction (projected to horizontal).
+    const eyeH = Math.max(2, extent / 1000);
+    const fwd = controls.target.clone().sub(camera.position);
+    fwd.z = 0;
+    if (fwd.lengthSq() < 1e-6) fwd.set(1, 0, 0);
+    fwd.normalize();
+    camera.position.set(
+      marker.position.x, marker.position.y, marker.position.z + eyeH);
+    // Pivot on the point itself: target = marker, eye pulled slightly back
+    // along the incoming gaze so orbiting looks around from the spot.
+    controls.target.copy(marker.position);
+    camera.position.addScaledVector(fwd, -eyeH * 2);
+    // Stand mode: rotate + pan (height control) free; zoom locked until
+    // reset so you can't dolly out of the spot.
+    // Marker hides so it doesn't block the view; reset restores it.
+    controls.enablePan = true;
+    controls.enableZoom = false;
+    marker.visible = false;
+    focusBtn.classList.add('active');
+    controls.update();
+  };
+
   const chkBld = manifest.buildings ? el('chkBld') : null;
   if (manifest.buildings) {
     el('layerSection').style.display = '';
@@ -413,6 +486,7 @@ async function main() {
     new THREE.MeshBasicMaterial({ color: 0xff3333, depthTest: false, transparent: true, opacity: 0.9 }));
   marker.visible = false;
   marker.renderOrder = 999;
+  let markerPlaced = false;
   scene.add(marker);
   const elevLine = document.createElement('div');
   infoEl.appendChild(elevLine);
@@ -433,6 +507,7 @@ async function main() {
       const hits = raycaster.intersectObjects([terrainGroup, buildingsGroup], true);
       if (!hits.length) {
         marker.visible = false;
+        focusBtn.disabled = true;
         elevLine.textContent = 'clicked outside terrain — no reading';
         return;
       }
@@ -447,6 +522,8 @@ async function main() {
       const ll = utmToLonLat(wx, wy);
       marker.position.copy(p);
       marker.visible = true;
+      markerPlaced = true;
+      focusBtn.disabled = false;
       if (!elevGrid) {
         elevLine.textContent = 'elevation readout not exported for this dataset (re-export with an elevation grid)';
       } else {
@@ -474,6 +551,10 @@ async function main() {
   if (settings.az) sunAz.value = settings.az;
   if (settings.alt) sunAlt.value = settings.alt;
   updateHillSun();
+  if (settings.focal) {
+    focal.value = Math.min(200, Math.max(14, Number(settings.focal)));
+    applyFocal();
+  }
   if (settings.exagg) {
     exagg.value = Math.min(5, Math.max(1, Number(settings.exagg)));
     exagg.dispatchEvent(new Event('input'));

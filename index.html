@@ -37,6 +37,9 @@
   .seg button.active, .dsbtn.active {
     background: var(--accent); color: #fff; border-color: var(--accent);
   }
+  #focusBtn.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
   .seg button:disabled { opacity: 0.45; }
   input[type="range"] { width: 100%; min-height: 44px; }
   .rowline { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
@@ -95,6 +98,21 @@
     <section><div class="stitle">Height</div>
       <div class="rowline"><input id="exagg" type="range" min="1" max="5" value="1" step="0.1"><span id="exaggVal">1.0×</span></div>
     </section>
+    <section><div class="stitle">Camera</div>
+      <div class="rowline"><span>Focal</span><span id="focalVal">23 mm</span></div>
+      <input id="focal" type="range" min="14" max="200" value="23" step="1">
+      <div class="rowline" style="margin-top:4px">
+        <button id="focusBtn" title="Fly camera above the selected point" disabled style="flex:1;min-height:44px;cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </button>
+        <button id="resetBtn" title="Reset camera view" style="flex:1;min-height:44px;cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        </button>
+        <button id="homeBtn" title="Restore all defaults (keeps camera)" style="flex:1;min-height:44px;cursor:pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>
+        </button>
+      </div>
+    </section>
     <section id="sunSection" style="display:none"><div class="stitle">Sun</div>
       <div class="rowline"><span>Azimuth</span><span id="sunAzVal">315°</span></div>
       <input id="sunAz" type="range" min="0" max="360" value="315" step="1">
@@ -111,6 +129,6 @@
 <div id="loading"><div id="loadLabel">loading…</div><div class="bar"><div id="loadBar"></div></div></div>
 <div id="errbox"><div id="errMsg"></div><button onclick="location.reload()">Retry</button></div>
 <div id="attr">Copernicus DEM (EGM2008, surface model) · Copernicus Sentinel-2 imagery · © OpenStreetMap contributors (ODbL)</div>
-<script type="module" src="./main.js?v=20"></script>
+<script type="module" src="./main.js?v=26"></script>
 </body>
 </html>

@@ -27,8 +27,26 @@ const saveSettings = (s) => {
 
 async function main() {
   const params = new URLSearchParams(location.search);
-  const manifestPath = './data/' + (params.get('m') || 'manifest.json');
-  const res = await fetch(manifestPath);
+  // Default manifest: explicit ?m= wins; else manifest.json; else the
+  // first dataset registered by export_web (fresh single-dataset sites
+  // often only have e.g. mtApo.json).
+  let manifestFile = params.get('m') || 'manifest.json';
+  const manifestPath = './data/' + manifestFile;
+  let res = await fetch(manifestPath);
+  if (!res.ok && !params.get('m')) {
+    try {
+      const reg = await (await fetch('./data/datasets.json')).json();
+      if (Array.isArray(reg) && reg.length && reg[0].file) {
+        manifestFile = reg[0].file;
+        res = await fetch('./data/' + manifestFile);
+      }
+    } catch { /* fall through to the error below */ }
+  }
+  if (!res.ok) {
+    showError(`manifest ${manifestFile} not found (HTTP ${res.status}). ` +
+      `Export a dataset into this site first.`);
+    return;
+  }
   const manifest = await res.json();
 
   if (manifest.earth_model !== 'flat') {
@@ -44,6 +62,10 @@ async function main() {
   // upload flip (false for all datasets so far; true mirrors N/S).
   const flipY = manifest.texture_flip_y === true;
 
+  // Appearance theme from the manifest (export --theme); falls back to
+  // the default light theme. Scene background follows the theme too.
+  document.body.dataset.theme = manifest.theme || 'light';
+
   const container = document.getElementById('app');
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -53,7 +75,8 @@ async function main() {
   container.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b0e13);
+  const themeBg = getComputedStyle(document.body).getPropertyValue('--scene-bg').trim();
+  scene.background = new THREE.Color(themeBg || '#0b0e13');
 
   const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 1, 1e7);
   camera.up.set(0, 0, 1); // Z-up: mesh Z is absolute elevation
@@ -235,7 +258,7 @@ async function main() {
   infoEl.innerHTML =
     `${manifest.tiles.length} tiles · extent ${Math.round(size.x)} × ${Math.round(size.y)} m<br>` +
     `elevation ${zRange[0].toFixed(1)} … ${zRange[1].toFixed(1)} m<br>` +
-    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v29)</span><br>` +
+    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v31)</span><br>` +
     `${manifest.attribution}`;
 
   const settings = loadSettings();
@@ -249,7 +272,7 @@ async function main() {
 
   // Dataset switcher (URL ?m= stays the source of truth). Populated from
   // data/datasets.json, which export_web maintains on every export.
-  const currentM = params.get('m') || 'manifest.json';
+  const currentM = manifestFile;
   let datasetList = [{ label: manifest.name, file: currentM }];
   try {
     const reg = await (await fetch('./data/datasets.json')).json();

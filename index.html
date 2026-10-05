@@ -5,13 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DEM Viewer</title>
 <style>
-  :root { --panel-bg: rgba(255,255,255,0.94); --accent: #1a6fd4; }
+  :root {
+    --panel-bg: rgba(255,255,255,0.94); --panel-fg: #111;
+    --accent: #1a6fd4; --accent-fg: #fff;
+    --btn-bg: #fff; --btn-fg: #111; --btn-border: #bbb;
+    --dim-fg: #666; --info-fg: #333;
+    --load-bg: rgba(10,12,16,0.72); --load-fg: #fff; --load-track: #444;
+    --err-bg: #fdecea; --err-fg: #700; --err-border: #c00;
+    --attr-bg: rgba(255,255,255,0.85); --attr-fg: #333;
+    --scene-bg: #0b0e13;
+  }
+  body[data-theme="dark"] {
+    --panel-bg: rgba(30,36,48,0.95); --panel-fg: #e8ecf3;
+    --accent: #4da3ff; --accent-fg: #0b1220;
+    --btn-bg: #2a3342; --btn-fg: #e8ecf3; --btn-border: #4a5568;
+    --dim-fg: #9aa7bd; --info-fg: #c9d2e0;
+    --load-bg: rgba(5,8,14,0.85); --load-fg: #e8ecf3; --load-track: #333d4f;
+    --err-bg: #3a1114; --err-fg: #ffb4ac; --err-border: #c00;
+    --attr-bg: rgba(22,27,36,0.9); --attr-fg: #c9d2e0;
+    --scene-bg: #05070c;
+  }
+  body[data-theme="midnight"] {
+    --panel-bg: rgba(8,15,34,0.95); --panel-fg: #d9f4ff;
+    --accent: #22d3ee; --accent-fg: #04121a;
+    --btn-bg: #0f2140; --btn-fg: #d9f4ff; --btn-border: #1e4a73;
+    --dim-fg: #7fa8c4; --info-fg: #a8d4ec;
+    --load-bg: rgba(3,8,18,0.85); --load-fg: #d9f4ff; --load-track: #12314d;
+    --err-bg: #3a1114; --err-fg: #ffb4ac; --err-border: #c00;
+    --attr-bg: rgba(8,15,34,0.92); --attr-fg: #a8d4ec;
+    --scene-bg: #020814;
+  }
+  body[data-theme="forest"] {
+    --panel-bg: rgba(18,34,24,0.95); --panel-fg: #dcefe2;
+    --accent: #34d17b; --accent-fg: #06130c;
+    --btn-bg: #1d3a28; --btn-fg: #dcefe2; --btn-border: #356b47;
+    --dim-fg: #8fb89f; --info-fg: #b9dcc6;
+    --load-bg: rgba(6,14,10,0.85); --load-fg: #dcefe2; --load-track: #24402f;
+    --err-bg: #3a1114; --err-fg: #ffb4ac; --err-border: #c00;
+    --attr-bg: rgba(18,34,24,0.92); --attr-fg: #b9dcc6;
+    --scene-bg: #0a1410;
+  }
+  body[data-theme="ocean"] {
+    --panel-bg: rgba(10,32,52,0.95); --panel-fg: #dcf3fb;
+    --accent: #00b4d8; --accent-fg: #03202b;
+    --btn-bg: #12395a; --btn-fg: #dcf3fb; --btn-border: #2a6d96;
+    --dim-fg: #82b4cb; --info-fg: #a9d8ea;
+    --load-bg: rgba(4,14,24,0.85); --load-fg: #dcf3fb; --load-track: #14405c;
+    --err-bg: #3a1114; --err-fg: #ffb4ac; --err-border: #c00;
+    --attr-bg: rgba(10,32,52,0.92); --attr-fg: #a9d8ea;
+    --scene-bg: #06121e;
+  }
+  body[data-theme="desert"] {
+    --panel-bg: rgba(250,243,230,0.95); --panel-fg: #4a3d28;
+    --accent: #c77b2a; --accent-fg: #fff;
+    --btn-bg: #fffdf6; --btn-fg: #4a3d28; --btn-border: #d3c096;
+    --dim-fg: #97805c; --info-fg: #5b4a32;
+    --load-bg: rgba(46,34,18,0.85); --load-fg: #faf3e6; --load-track: #6b5836;
+    --err-bg: #fdecea; --err-fg: #700; --err-border: #c00;
+    --attr-bg: rgba(250,243,230,0.9); --attr-fg: #5b4a32;
+    --scene-bg: #20180e;
+  }
+  body[data-theme="arctic"] {
+    --panel-bg: rgba(238,246,251,0.95); --panel-fg: #23465c;
+    --accent: #1493c4; --accent-fg: #fff;
+    --btn-bg: #ffffff; --btn-fg: #23465c; --btn-border: #b8d4e2;
+    --dim-fg: #6d93a8; --info-fg: #2c4a5e;
+    --load-bg: rgba(30,55,72,0.85); --load-fg: #eef6fb; --load-track: #39586c;
+    --err-bg: #fdecea; --err-fg: #700; --err-border: #c00;
+    --attr-bg: rgba(238,246,251,0.9); --attr-fg: #2c4a5e;
+    --scene-bg: #cfdfe9;
+  }
+  body[data-theme="volcano"] {
+    --panel-bg: rgba(26,20,20,0.95); --panel-fg: #f3e2d8;
+    --accent: #ff5a2a; --accent-fg: #1c0a04;
+    --btn-bg: #3a2620; --btn-fg: #f3e2d8; --btn-border: #6e4536;
+    --dim-fg: #c09a86; --info-fg: #e0bda6;
+    --load-bg: rgba(14,8,6,0.85); --load-fg: #f3e2d8; --load-track: #4a2f24;
+    --err-bg: #3a1114; --err-fg: #ffb4ac; --err-border: #c00;
+    --attr-bg: rgba(26,20,20,0.92); --attr-fg: #e0bda6;
+    --scene-bg: #120a08;
+  }
+  body[data-theme="sepia"] {
+    --panel-bg: rgba(244,236,216,0.95); --panel-fg: #4a3d28;
+    --accent: #8a6d3b; --accent-fg: #fff;
+    --btn-bg: #fdf8ea; --btn-fg: #4a3d28; --btn-border: #cbb87f;
+    --dim-fg: #8d7a58; --info-fg: #5b4632;
+    --load-bg: rgba(43,34,20,0.85); --load-fg: #f4ecd8; --load-track: #5c4d30;
+    --err-bg: #fdecea; --err-fg: #700; --err-border: #c00;
+    --attr-bg: rgba(244,236,216,0.9); --attr-fg: #5b4632;
+    --scene-bg: #221a10;
+  }
+  body[data-theme="contrast"] {
+    --panel-bg: #000; --panel-fg: #fff;
+    --accent: #ffea00; --accent-fg: #000;
+    --btn-bg: #000; --btn-fg: #fff; --btn-border: #fff;
+    --dim-fg: #e8e8e8; --info-fg: #fff;
+    --load-bg: #000; --load-fg: #fff; --load-track: #555;
+    --err-bg: #000; --err-fg: #ffe600; --err-border: #ffe600;
+    --attr-bg: #000; --attr-fg: #fff;
+    --scene-bg: #000;
+  }
   html, body { margin: 0; height: 100%; overflow: hidden; font-family: sans-serif; }
   #app { width: 100%; height: 100%; }
   #app canvas { display: block; }
   #panel {
     position: fixed; left: 8px; top: 8px; z-index: 10;
-    background: var(--panel-bg); border-radius: 8px; width: 300px;
+    background: var(--panel-bg); color: var(--panel-fg);
+    border-radius: 8px; width: 300px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.35);
     font-size: 13px; line-height: 1.45; overflow: hidden;
     max-height: calc(100vh - 16px); display: flex; flex-direction: column;
@@ -21,25 +121,25 @@
     padding: 8px 10px; font-weight: bold; cursor: pointer; user-select: none;
   }
   #panel header button {
-    border: 1px solid #bbb; background: #fff; border-radius: 4px;
+    border: 1px solid var(--btn-border); background: var(--btn-bg); color: var(--btn-fg); border-radius: 4px;
     min-width: 44px; min-height: 32px; font-size: 14px; cursor: pointer;
   }
   #panelBody { padding: 0 10px 10px; overflow-y: auto; }
   #panel.collapsed #panelBody { display: none; }
   #panel section { margin: 6px 0; }
   #panel section > .stitle {
-    font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px;
+    font-size: 11px; text-transform: uppercase; color: var(--dim-fg); margin-bottom: 4px;
   }
   .seg { display: flex; gap: 4px; }
   .seg button, .dsbtn {
-    flex: 1; border: 1px solid #bbb; background: #fff; border-radius: 4px;
+    flex: 1; border: 1px solid var(--btn-border); background: var(--btn-bg); color: var(--btn-fg); border-radius: 4px;
     min-height: 44px; font-size: 13px; cursor: pointer; padding: 6px 4px;
   }
   .seg button.active, .dsbtn.active {
-    background: var(--accent); color: #fff; border-color: var(--accent);
+    background: var(--accent); color: var(--accent-fg); border-color: var(--accent);
   }
   #focusBtn.active {
-    background: var(--accent); color: #fff; border-color: var(--accent);
+    background: var(--accent); color: var(--accent-fg); border-color: var(--accent);
   }
   .seg button:disabled { opacity: 0.45; }
   input[type="range"] { width: 100%; min-height: 44px; }
@@ -50,26 +150,26 @@
   }
   .rowline { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .rowline input[type="checkbox"] { width: 22px; height: 22px; }
-  #info { font-size: 12px; color: #333; }
+  #info { font-size: 12px; color: var(--info-fg); }
   #loading {
     position: fixed; inset: 0; z-index: 20; display: flex;
     flex-direction: column; justify-content: center; align-items: center; gap: 10px;
-    background: rgba(10,12,16,0.72); color: #fff; font-size: 14px;
+    background: var(--load-bg); color: var(--load-fg); font-size: 14px;
   }
-  #loading .bar { width: min(320px, 70vw); height: 8px; background: #444; border-radius: 4px; }
+  #loading .bar { width: min(320px, 70vw); height: 8px; background: var(--load-track); border-radius: 4px; }
   #loading .bar > div { height: 100%; width: 0%; background: var(--accent); border-radius: 4px; }
   #errbox {
     position: fixed; left: 8px; right: 8px; top: 8px; z-index: 30; display: none;
-    background: #fdecea; border: 1px solid #c00; border-radius: 8px;
-    padding: 10px 12px; font-size: 13px; color: #700; max-width: 480px;
+    background: var(--err-bg); border: 1px solid var(--err-border); border-radius: 8px;
+    padding: 10px 12px; font-size: 13px; color: var(--err-fg); max-width: 480px;
   }
   #errbox button {
     margin-top: 6px; min-height: 44px; padding: 6px 14px; cursor: pointer;
   }
   #attr {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-    background: rgba(255,255,255,0.85); padding: 3px 10px;
-    font-size: 11px; color: #333; text-align: center;
+    background: var(--attr-bg); padding: 3px 10px;
+    font-size: 11px; color: var(--attr-fg); text-align: center;
   }
   @media (max-width: 700px) {
     #panel {
@@ -138,6 +238,6 @@
 <div id="loading"><div id="loadLabel">loading…</div><div class="bar"><div id="loadBar"></div></div></div>
 <div id="errbox"><div id="errMsg"></div><button onclick="location.reload()">Retry</button></div>
 <div id="attr">Copernicus DEM (EGM2008, surface model) · Copernicus Sentinel-2 imagery · © OpenStreetMap contributors (ODbL)</div>
-<script type="module" src="./main.js?v=29"></script>
+<script type="module" src="./main.js?v=31"></script>
 </body>
 </html>

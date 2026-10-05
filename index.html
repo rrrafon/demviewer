@@ -14,6 +14,7 @@
     background: var(--panel-bg); border-radius: 8px; width: 300px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.35);
     font-size: 13px; line-height: 1.45; overflow: hidden;
+    max-height: calc(100vh - 16px); display: flex; flex-direction: column;
   }
   #panel header {
     display: flex; justify-content: space-between; align-items: center;
@@ -23,9 +24,9 @@
     border: 1px solid #bbb; background: #fff; border-radius: 4px;
     min-width: 44px; min-height: 32px; font-size: 14px; cursor: pointer;
   }
-  #panelBody { padding: 0 10px 10px; }
+  #panelBody { padding: 0 10px 10px; overflow-y: auto; }
   #panel.collapsed #panelBody { display: none; }
-  #panel section { margin: 8px 0; }
+  #panel section { margin: 6px 0; }
   #panel section > .stitle {
     font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px;
   }
@@ -42,6 +43,11 @@
   }
   .seg button:disabled { opacity: 0.45; }
   input[type="range"] { width: 100%; min-height: 44px; }
+  @media (pointer: fine) {
+    input[type="range"] { min-height: 28px; }
+    .seg button, .dsbtn { min-height: 32px; }
+    .rowline input[type="checkbox"] { width: 18px; height: 18px; }
+  }
   .rowline { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .rowline input[type="checkbox"] { width: 22px; height: 22px; }
   #info { font-size: 12px; color: #333; }
@@ -94,7 +100,9 @@
     <section><div class="stitle">Dataset</div><div class="seg" id="dsBtns"></div></section>
     <section><div class="stitle">Display</div><div class="seg" id="modeSeg">
       <button data-mode="untextured">Untextured</button><button data-mode="textured">Textured</button><button data-mode="hillshade">Hillshade</button>
-    </div></section>
+    </div>
+      <div class="rowline" style="margin-top:4px"><label for="colUntex">Terrain color</label><input type="color" id="colUntex" value="#9aa37a" style="width:44px;height:32px;padding:0;border:1px solid #bbb"></div>
+    </section>
     <section><div class="stitle">Height</div>
       <div class="rowline"><input id="exagg" type="range" min="1" max="5" value="1" step="0.1"><span id="exaggVal">1.0×</span></div>
     </section>
@@ -119,6 +127,7 @@
       <div class="rowline"><span>Altitude</span><span id="sunAltVal">45°</span></div>
       <input id="sunAlt" type="range" min="0" max="90" value="45" step="1">
       <div class="rowline"><label for="chkShadow">Cast shadows</label><input type="checkbox" id="chkShadow" checked></div>
+      <div class="rowline"><label for="colHill">Hillshade color</label><input type="color" id="colHill" value="#ffffff" style="width:44px;height:32px;padding:0;border:1px solid #bbb"></div>
     </section>
     <section id="layerSection" style="display:none"><div class="stitle">Layers</div>
       <div class="rowline"><label for="chkBld">Buildings</label><input type="checkbox" id="chkBld" checked></div>
@@ -129,6 +138,6 @@
 <div id="loading"><div id="loadLabel">loading…</div><div class="bar"><div id="loadBar"></div></div></div>
 <div id="errbox"><div id="errMsg"></div><button onclick="location.reload()">Retry</button></div>
 <div id="attr">Copernicus DEM (EGM2008, surface model) · Copernicus Sentinel-2 imagery · © OpenStreetMap contributors (ODbL)</div>
-<script type="module" src="./main.js?v=26"></script>
+<script type="module" src="./main.js?v=29"></script>
 </body>
 </html>

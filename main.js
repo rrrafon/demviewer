@@ -235,7 +235,7 @@ async function main() {
   infoEl.innerHTML =
     `${manifest.tiles.length} tiles · extent ${Math.round(size.x)} × ${Math.round(size.y)} m<br>` +
     `elevation ${zRange[0].toFixed(1)} … ${zRange[1].toFixed(1)} m<br>` +
-    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v26)</span><br>` +
+    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v29)</span><br>` +
     `${manifest.attribution}`;
 
   const settings = loadSettings();
@@ -244,6 +244,7 @@ async function main() {
     bld: chkBld ? chkBld.checked : true,
     shadow: chkShadow.checked,
     focal: focal.value,
+    colU: colUntex.value, colH: colHill.value,
   });
 
   // Dataset switcher (URL ?m= stays the source of truth). Populated from
@@ -365,6 +366,7 @@ async function main() {
     controls.enablePan = true;
     controls.enableZoom = true;
     marker.visible = markerPlaced;
+    standMode = false;
     focusBtn.classList.remove('active');
     focal.value = Math.round(12 / Math.tan(homeFov * Math.PI / 360));
     applyFocal();
@@ -411,9 +413,25 @@ async function main() {
     controls.enablePan = true;
     controls.enableZoom = false;
     marker.visible = false;
+    standMode = true;
     focusBtn.classList.add('active');
     controls.update();
   };
+
+  // User-set base colors (persisted). Hillshade stays a single-hue
+  // material so shading remains pure N·L, just tinted.
+  const colUntex = el('colUntex');
+  const colHill = el('colHill');
+  colUntex.oninput = () => { untexturedMat.color.set(colUntex.value); persist(); };
+  colHill.oninput = () => { hillshadeMat.color.set(colHill.value); persist(); };
+  if (settings.colU && /^#[0-9a-fA-F]{6}$/.test(settings.colU)) {
+    colUntex.value = settings.colU;
+    untexturedMat.color.set(settings.colU);
+  }
+  if (settings.colH && /^#[0-9a-fA-F]{6}$/.test(settings.colH)) {
+    colHill.value = settings.colH;
+    hillshadeMat.color.set(settings.colH);
+  }
 
   const chkBld = manifest.buildings ? el('chkBld') : null;
   if (manifest.buildings) {
@@ -492,9 +510,12 @@ async function main() {
   infoEl.appendChild(elevLine);
   const raycaster = new THREE.Raycaster();
   let downAt = null;
+  // Stand (focus) mode locks selection as well as movement: clicks only
+  // place the marker in overview mode.
+  let standMode = false;
   renderer.domElement.addEventListener('pointerdown', (e) => { downAt = [e.clientX, e.clientY]; });
   renderer.domElement.addEventListener('pointerup', (e) => {
-    if (!downAt) return;
+    if (!downAt || standMode) { downAt = null; return; }
     const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
     downAt = null;
     if (moved > 5) return; // was a drag, not a click

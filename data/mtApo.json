@@ -1,0 +1,215 @@
+{
+  "name": "mtApo",
+  "crs": "EPSG:32651",
+  "origin": [
+    725599.5927264341,
+    747953.6217862129
+  ],
+  "earth_model": "flat",
+  "z_exaggeration": 1.0,
+  "tile_overlap_px": 0,
+  "texture_alpha": true,
+  "texture_flip_y": false,
+  "vertical_datum": "EGM2008 (COP30)",
+  "tiles": [
+    {
+      "row": 0,
+      "col": 0,
+      "file": "dem/mtApo_r0c0_textured.glb",
+      "texture": "dem/mtApo_r0c0_textured.webp",
+      "bounds": [
+        725599.5927264341,
+        785645.0899256393,
+        738132.6970466346,
+        798208.9126387815
+      ]
+    },
+    {
+      "row": 0,
+      "col": 1,
+      "file": "dem/mtApo_r0c1_textured.glb",
+      "texture": "dem/mtApo_r0c1_textured.webp",
+      "bounds": [
+        738132.6970466346,
+        785645.0899256393,
+        750696.5197597768,
+        798208.9126387815
+      ]
+    },
+    {
+      "row": 0,
+      "col": 2,
+      "file": "dem/mtApo_r0c2_textured.glb",
+      "texture": "dem/mtApo_r0c2_textured.webp",
+      "bounds": [
+        750696.5197597768,
+        785645.0899256393,
+        763260.3424729189,
+        798208.9126387815
+      ]
+    },
+    {
+      "row": 0,
+      "col": 3,
+      "file": "dem/mtApo_r0c3_textured.glb",
+      "texture": "dem/mtApo_r0c3_textured.webp",
+      "bounds": [
+        763260.3424729189,
+        785645.0899256393,
+        775793.4467931193,
+        798208.9126387815
+      ]
+    },
+    {
+      "row": 1,
+      "col": 0,
+      "file": "dem/mtApo_r1c0_textured.glb",
+      "texture": "dem/mtApo_r1c0_textured.webp",
+      "bounds": [
+        725599.5927264341,
+        773081.2672124972,
+        738132.6970466346,
+        785645.0899256393
+      ]
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "file": "dem/mtApo_r1c1_textured.glb",
+      "texture": "dem/mtApo_r1c1_textured.webp",
+      "bounds": [
+        738132.6970466346,
+        773081.2672124972,
+        750696.5197597768,
+        785645.0899256393
+      ]
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "file": "dem/mtApo_r1c2_textured.glb",
+      "texture": "dem/mtApo_r1c2_textured.webp",
+      "bounds": [
+        750696.5197597768,
+        773081.2672124972,
+        763260.3424729189,
+        785645.0899256393
+      ]
+    },
+    {
+      "row": 1,
+      "col": 3,
+      "file": "dem/mtApo_r1c3_textured.glb",
+      "texture": "dem/mtApo_r1c3_textured.webp",
+      "bounds": [
+        763260.3424729189,
+        773081.2672124972,
+        775793.4467931193,
+        785645.0899256393
+      ]
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "file": "dem/mtApo_r2c0_textured.glb",
+      "texture": "dem/mtApo_r2c0_textured.webp",
+      "bounds": [
+        725599.5927264341,
+        760517.444499355,
+        738132.6970466346,
+        773081.2672124972
+      ]
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "file": "dem/mtApo_r2c1_textured.glb",
+      "texture": "dem/mtApo_r2c1_textured.webp",
+      "bounds": [
+        738132.6970466346,
+        760517.444499355,
+        750696.5197597768,
+        773081.2672124972
+      ]
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "file": "dem/mtApo_r2c2_textured.glb",
+      "texture": "dem/mtApo_r2c2_textured.webp",
+      "bounds": [
+        750696.5197597768,
+        760517.444499355,
+        763260.3424729189,
+        773081.2672124972
+      ]
+    },
+    {
+      "row": 2,
+      "col": 3,
+      "file": "dem/mtApo_r2c3_textured.glb",
+      "texture": "dem/mtApo_r2c3_textured.webp",
+      "bounds": [
+        763260.3424729189,
+        760517.444499355,
+        775793.4467931193,
+        773081.2672124972
+      ]
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "file": "dem/mtApo_r3c0_textured.glb",
+      "texture": "dem/mtApo_r3c0_textured.webp",
+      "bounds": [
+        725599.5927264341,
+        747953.6217862129,
+        738132.6970466346,
+        760517.444499355
+      ]
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "file": "dem/mtApo_r3c1_textured.glb",
+      "texture": "dem/mtApo_r3c1_textured.webp",
+      "bounds": [
+        738132.6970466346,
+        747953.6217862129,
+        750696.5197597768,
+        760517.444499355
+      ]
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "file": "dem/mtApo_r3c2_textured.glb",
+      "texture": "dem/mtApo_r3c2_textured.webp",
+      "bounds": [
+        750696.5197597768,
+        747953.6217862129,
+        763260.3424729189,
+        760517.444499355
+      ]
+    },
+    {
+      "row": 3,
+      "col": 3,
+      "file": "dem/mtApo_r3c3_textured.glb",
+      "texture": "dem/mtApo_r3c3_textured.webp",
+      "bounds": [
+        763260.3424729189,
+        747953.6217862129,
+        775793.4467931193,
+        760517.444499355
+      ]
+    }
+  ],
+  "buildings": "osm/mtApo.glb",
+  "elevation_grid": "dem/mtApo_elev.json",
+  "sources": {
+    "dem": "Copernicus DEM COP30 (surface model, includes canopy/buildings)",
+    "imagery": "Copernicus Sentinel-2"
+  },
+  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery"
+}

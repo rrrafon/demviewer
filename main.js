@@ -231,7 +231,7 @@ async function main() {
   infoEl.innerHTML =
     `${manifest.tiles.length} tiles · extent ${Math.round(size.x)} × ${Math.round(size.y)} m<br>` +
     `elevation ${zRange[0].toFixed(1)} … ${zRange[1].toFixed(1)} m<br>` +
-    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v18)</span><br>` +
+    `CRS ${manifest.crs} · flat · exaggeration 1.0 <span style="color:#888">(v20)</span><br>` +
     `${manifest.attribution}`;
 
   const settings = loadSettings();
@@ -424,27 +424,39 @@ async function main() {
     const moved = Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]);
     downAt = null;
     if (moved > 5) return; // was a drag, not a click
-    const rect = renderer.domElement.getBoundingClientRect();
-    const ptr = new THREE.Vector2(
-      ((e.clientX - rect.left) / rect.width) * 2 - 1,
-      -((e.clientY - rect.top) / rect.height) * 2 + 1);
-    raycaster.setFromCamera(ptr, camera);
-    const hits = raycaster.intersectObjects([terrainGroup, buildingsGroup], true);
-    if (!hits.length) return;
-    const p = hits[0].point;
-    // Back to absolute frame: undo centre offset and exaggeration, then
-    // re-apply the manifest origin (mesh coords are origin-relative).
-    const k = scaleGroup.scale.z;
-    const ox = (manifest.origin && manifest.origin[0]) || 0;
-    const oy = (manifest.origin && manifest.origin[1]) || 0;
-    const wx = p.x - scaleGroup.position.x + ox;
-    const wy = p.y - scaleGroup.position.y + oy;
-    const h = sampleElev(wx, wy);
-    const ll = utmToLonLat(wx, wy);
-    marker.position.copy(p);
-    marker.visible = true;
-    elevLine.innerHTML = (h === null || h === undefined || Number.isNaN(h) ? 'no elevation data' : `${h.toFixed(1)} m`)
-      + (ll ? ` · ${ll[1].toFixed(5)}°, ${ll[0].toFixed(5)}°` : '');
+    try {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const ptr = new THREE.Vector2(
+        ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        -((e.clientY - rect.top) / rect.height) * 2 + 1);
+      raycaster.setFromCamera(ptr, camera);
+      const hits = raycaster.intersectObjects([terrainGroup, buildingsGroup], true);
+      if (!hits.length) {
+        marker.visible = false;
+        elevLine.textContent = 'clicked outside terrain — no reading';
+        return;
+      }
+      const p = hits[0].point;
+      // Back to absolute frame: undo centre offset and exaggeration, then
+      // re-apply the manifest origin (mesh coords are origin-relative).
+      const ox = (manifest.origin && manifest.origin[0]) || 0;
+      const oy = (manifest.origin && manifest.origin[1]) || 0;
+      const wx = p.x - scaleGroup.position.x + ox;
+      const wy = p.y - scaleGroup.position.y + oy;
+      const h = sampleElev(wx, wy);
+      const ll = utmToLonLat(wx, wy);
+      marker.position.copy(p);
+      marker.visible = true;
+      if (!elevGrid) {
+        elevLine.textContent = 'elevation readout not exported for this dataset (re-export with an elevation grid)';
+      } else {
+        elevLine.textContent = (h === null || h === undefined || Number.isNaN(h) ? 'outside elevation coverage' : `${h.toFixed(1)} m`)
+          + (ll ? ` · ${ll[1].toFixed(5)}°, ${ll[0].toFixed(5)}°` : '');
+      }
+    } catch (err) {
+      console.error('readout failed:', err);
+      elevLine.textContent = `readout failed (${err.message}) — see console (F12)`;
+    }
   });
 
   // Shadows default on for desktop, off on small screens; remembered after.

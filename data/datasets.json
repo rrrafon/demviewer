@@ -1,1 +1,10 @@
-[{"label": "Mt Isarog 20k", "file": "manifest.json"}]
+[
+  {
+    "label": "mtIsarog",
+    "file": "manifest.json"
+  },
+  {
+    "label": "mtApo",
+    "file": "mtApo.json"
+  }
+]

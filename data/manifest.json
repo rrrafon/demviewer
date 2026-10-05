@@ -1,9 +1,9 @@
 {
-  "name": "mtisarog_20k",
+  "name": "mtIsarog",
   "crs": "EPSG:32651",
   "origin": [
-    515731.3,
-    1485874.4
+    515726.50558857806,
+    1485862.6976037708
   ],
   "earth_model": "flat",
   "z_exaggeration": 1.0,
@@ -18,10 +18,10 @@
       "file": "dem/mtIsarog_DEM_r0c0_textured.glb",
       "texture": "dem/mtIsarog_DEM_r0c0_textured.webp",
       "bounds": [
-        0.0,
-        24968.3,
-        25029.0,
-        49997.3
+        515726.50558857806,
+        1510830.9643724032,
+        540755.5223980101,
+        1535859.9811818353
       ]
     },
     {
@@ -30,10 +30,10 @@
       "file": "dem/mtIsarog_DEM_r0c1_textured.glb",
       "texture": "dem/mtIsarog_DEM_r0c1_textured.webp",
       "bounds": [
-        24968.3,
-        24968.3,
-        49997.3,
-        49997.3
+        540694.7723572105,
+        1510830.9643724032,
+        565723.7891666426,
+        1535859.9811818353
       ]
     },
     {
@@ -42,10 +42,10 @@
       "file": "dem/mtIsarog_DEM_r1c0_textured.glb",
       "texture": "dem/mtIsarog_DEM_r1c0_textured.webp",
       "bounds": [
-        0.0,
-        0.0,
-        25029.0,
-        25029.0
+        515726.50558857806,
+        1485862.6976037708,
+        540755.5223980101,
+        1510891.7144132028
       ]
     },
     {
@@ -54,18 +54,18 @@
       "file": "dem/mtIsarog_DEM_r1c1_textured.glb",
       "texture": "dem/mtIsarog_DEM_r1c1_textured.webp",
       "bounds": [
-        24968.3,
-        0.0,
-        49997.3,
-        25029.0
+        540694.7723572105,
+        1485862.6976037708,
+        565723.7891666426,
+        1510891.7144132028
       ]
     }
   ],
   "buildings": "osm/mtIsarog_OSM_aligned.glb",
+  "elevation_grid": "dem/mtIsarog_elev.json",
   "sources": {
-    "dem": "Copernicus DEM COP30 (surface model)",
+    "dem": "Copernicus DEM COP30 (surface model, includes canopy/buildings)",
     "imagery": "Copernicus Sentinel-2"
   },
-  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery",
-  "elevation_grid": "dem/mtIsarog_DEM_elev.json"
+  "attribution": "Copernicus DEM / Copernicus Sentinel-2 imagery"
 }
